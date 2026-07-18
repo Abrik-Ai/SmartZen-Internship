@@ -7,13 +7,38 @@ dependencies = [
   "fastapi>=0.115.0",
   "uvicorn[standard]>=0.30.0",
   "langgraph>=0.2.20",
-  "langchain-anthropic>=0.2.0",
-  "anthropic>=0.34.0",
+  # LOCAL model provider. SmartZen runs a local Ollama model so no data leaves
+  "langchain-ollama>=0.2.0",
   "pgvector>=0.3.5",
   "psycopg[binary]>=3.2.1",
   "pydantic>=2.9.0",
   "python-dotenv>=1.0.1",
+  # Verifies the caller's login token using the same secret the backend signs
+  # with (task 1.2). The AI service never has its own account.
+  "pyjwt>=2.9.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3.2", "httpx>=0.27.2"]
+dev = [
+  "pytest>=8.3.2",
+  "httpx>=0.27.2",
+  "ruff>=0.6.0",
+  "mypy>=1.11.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
