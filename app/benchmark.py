@@ -74,17 +74,17 @@ if __name__ == "__main__":
                 print(f"Unexpected Ollama error, stopping: {e}")
                 raise
 
-            vram_process.terminate()
-            vram_process.wait()
+    vram_process.terminate()
+    vram_process.wait()
 
-            with open(vram_log) as f:
-                vram_readings = [int(line.strip()) for line in f if line.strip()]
+    with open(vram_log) as f:
+        vram_readings = [int(line.strip()) for line in f if line.strip()]
 
-                if vram_readings:
-                    print(f"Peak VRAM: {max(vram_readings)} MiB")
-                    print(f"Average VRAM: {sum(vram_readings) / len(vram_readings):.1f} MiB")
-                else:
-                    print("No VRAM readings recorded.")
+        if vram_readings:
+            print(f"Peak VRAM: {max(vram_readings)} MiB")
+            print(f"Average VRAM: {sum(vram_readings) / len(vram_readings):.1f} MiB")
+        else:
+            print("No VRAM readings recorded.")
 
     print(f"\nDone. Success: {success}, Failure: {failure}, Total: {success + failure}")
 
