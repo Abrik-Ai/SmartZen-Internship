@@ -6,11 +6,14 @@ from app.models.generated import Schedule
 
 class MockResponse:
     def __init__(self, data: list[dict]):
-        self._data = data
+        self.data = data
 
     def json(self) -> list[dict]:
-        return self._data
+        return self.data
 
+    def raise_for_status(self) -> None:
+        pass  # Simulate a successful response (status code 200)
+    
 def test_get_schedules() -> None:
         mock_data = [ 
             {
