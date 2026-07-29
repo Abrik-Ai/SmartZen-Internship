@@ -1,5 +1,6 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest
-from unittest.mock import patch, AsyncMock
 
 from app.backend_client import BackendClient
 from app.tools.schedule import get_my_schedule
