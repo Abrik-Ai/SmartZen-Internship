@@ -1,0 +1,1 @@
+from .search_docs import documentation_search
