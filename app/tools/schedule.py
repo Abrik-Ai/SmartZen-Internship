@@ -1,45 +1,62 @@
-import logging
-from typing import Optional, Dict, Any
-from app.tools.client import BackendClient
+from datetime import UTC, datetime, timedelta
 
-logger = logging.getLogger(__name__)
+from pydantic import BaseModel
 
-async def get_my_schedule(token: str, range: str = "today") -> Dict[str, Any]:
-    """
-    Get the user's schedule for a specified time range.
+from app.backend_client import BackendClient
+from app.models.generated import RoomRef
+
+
+def date_time(range_value: str) -> tuple[datetime, datetime | None]:
+    now = datetime.now(UTC)
+    midnight_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    one_day = timedelta(days=1)
+    seven_days = timedelta(days=7)
+    midnight_tomorrow = midnight_today + one_day
+    midnight_week = midnight_today + seven_days
     
-    Args:
-        token: The user's authentication token
-        range: One of "today", "this_week", "upcoming"
-    
-    Returns:
-        Dict containing the user's schedule
-    """
-    client = BackendClient(token)
-    
-    # Map the range parameter to the backend's expected format
-    range_map = {
-        "today": "today",
-        "this week": "this_week",
-        "upcoming": "upcoming"
-    }
-    
-    backend_range = range_map.get(range.lower(), "today")
-    
-    endpoint = f"/api/schedule"
-    params = {"range": backend_range}
-    
-    logger.info(f"Fetching schedule for range: {backend_range}")
-    
-    try:
-        result = await client.get(endpoint, params)
-        logger.info(f"Schedule fetched successfully with {len(result.get('items', []))} items")
-        return result
-    except Exception as e:
-        logger.error(f"Failed to fetch schedule: {e}")
-        # Return empty schedule on error
-        return {
-            "items": [],
-            "range": backend_range,
-            "error": str(e)
-        }
+
+    if range_value == "today":
+        from_time = midnight_today
+        to_time = midnight_tomorrow
+        return from_time, to_time
+    elif range_value == "week":
+        from_time = midnight_today
+        to_time = midnight_week
+        return from_time, to_time
+    elif range_value == "upcoming":
+        from_time = now
+        to_time = None
+        return from_time, to_time
+    else:
+        raise ValueError(f"Invalid range: {range_value!r}")
+
+class ScheduleResponse(BaseModel):
+    id: str
+    course_label: str
+    start_time: str
+    end_time: str 
+    room: RoomRef
+
+async def get_my_schedule(
+        range_value: str, token: str, client: BackendClient
+        ) -> list[ScheduleResponse]:
+    from_time, to_time = date_time(range_value)
+    from_time_str = from_time.isoformat()
+    if to_time is not None:
+        to_time_str = to_time.isoformat()
+    else:
+        to_time_str = None
+    schedules = await client.get_schedules(token, from_time=from_time_str, to_time=to_time_str)
+    schedules_endpoint = [
+    ScheduleResponse(
+        id=schedule.id,
+        course_label=schedule.course_label,
+        start_time=schedule.start_time.isoformat(),
+        end_time=schedule.end_time.isoformat(),
+        room=schedule.room,
+    )
+    for schedule in schedules
+    ]
+    schedules_endpoint.sort(key=lambda s: s.start_time)
+    schedules_endpoint = schedules_endpoint[:20]
+    return schedules_endpoint
