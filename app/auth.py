@@ -1,14 +1,14 @@
-import os  #interact with os
 from dataclasses import dataclass
 
 import jwt  #to verify the token's signature 
 from fastapi import HTTPException, Request, status
 
+from app.config import JWT_ACCESS_SECRET
+
 #Request - to access HTTP request object(like request.headers)
 #HTTPException - to stop exectuion and send error (401, ...)
 #status - helper module containing code (401, instead of manually)
 
-JWT_ACCESS_SECRET = os.getenv("JWT_ACCESS_SECRET") # to have access to this variable
 
 @dataclass
 class AuthContext:
