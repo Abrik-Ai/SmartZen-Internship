@@ -1,4 +1,6 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from app.backend_client import BackendClient
 from app.models.generated import Schedule
@@ -14,7 +16,8 @@ class MockResponse:
     def raise_for_status(self) -> None:
         pass  # Simulate a successful response (status code 200)
     
-def test_get_schedules() -> None:
+@pytest.mark.asyncio
+async def test_get_schedules() -> None:
         mock_data = [ 
             {
                 "id": "1",
@@ -26,8 +29,8 @@ def test_get_schedules() -> None:
             }
         ]
 
-        with patch("app.backend_client.httpx.get", return_value=MockResponse(mock_data)):
+        with patch("app.backend_client.httpx.AsyncClient.get", new_callable=AsyncMock, return_value=MockResponse(mock_data)):
             client = BackendClient(base_url="http://testserver")
-            result = client.get_schedules(token="test_token")
+            result = await client.get_schedules(token="test_token")
 
         assert result == [Schedule.model_validate(mock_data[0])]

@@ -1,4 +1,5 @@
-from unittest.mock import patch
+import pytest
+from unittest.mock import patch, AsyncMock
 
 from app.backend_client import BackendClient
 from app.tools.schedule import get_my_schedule
@@ -13,19 +14,20 @@ class MockResponse:
 
     def raise_for_status(self) -> None:
         pass
-
-def test_token_forward_a() -> None:
-    with patch("app.backend_client.httpx.get", return_value=MockResponse([])) as mock_get:
+@pytest.mark.asyncio
+async def test_token_forward_a() -> None:
+    with patch("app.backend_client.httpx.AsyncClient.get", new_callable=AsyncMock, return_value=MockResponse([])) as mock_get:
         client = BackendClient(base_url="http://testserver")
-        get_my_schedule("week", "token-for-instructor-a", client)
+        await get_my_schedule("week", "token-for-instructor-a", client)
 
         sent_headers = mock_get.call_args.kwargs["headers"]
         assert sent_headers["Authorization"] == "Bearer token-for-instructor-a"
 
-def test_token_forward_b() -> None:
-    with patch("app.backend_client.httpx.get", return_value=MockResponse([])) as mock_get:
+@pytest.mark.asyncio
+async def test_token_forward_b() -> None:
+    with patch("app.backend_client.httpx.AsyncClient.get", new_callable=AsyncMock, return_value=MockResponse([])) as mock_get:
         client = BackendClient(base_url="http://testserver")
-        get_my_schedule("week", "token-for-instructor-b", client)
+        await get_my_schedule("week", "token-for-instructor-b", client)
 
         sent_headers = mock_get.call_args.kwargs["headers"]
         assert sent_headers["Authorization"] == "Bearer token-for-instructor-b"

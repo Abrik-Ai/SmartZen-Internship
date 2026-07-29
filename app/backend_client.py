@@ -12,15 +12,16 @@ class BackendClient:
         self.base_url = base_url
 
 
-    def login(self, email: str, password: str) -> AuthTokens:
+    async def login(self, email: str, password: str) -> AuthTokens:
         url = self.base_url + "/auth/login"
-        response = call_with_retries(
-            lambda: httpx.post(url, json={"email": email, "password": password}, timeout=10)
-            )
+        async with httpx.AsyncClient() as client:
+            response = await call_with_retries(
+                lambda: client.post(url, json={"email": email, "password": password}, timeout=10)
+                )
         data = response.json() # to convert JSON to a Python dictionary
         return AuthTokens.model_validate(data)
 
-    def get_schedules(self, token: str, 
+    async def get_schedules(self, token: str, 
                       from_time: str | None = None, to_time: str | None = None
                       ) -> list[Schedule]:
         url = self.base_url + "/schedules/me"
@@ -31,9 +32,10 @@ class BackendClient:
             params["from"] = from_time
         if to_time is not None:
             params["to"] = to_time
-        response = call_with_retries(
-            lambda: httpx.get(url, headers=headers, params=params, timeout=10)
-            )
+        async with httpx.AsyncClient() as client:    
+            response = await call_with_retries(
+                lambda: client.get(url, headers=headers, params=params, timeout=10)
+                )
         data = response.json()  
         return [Schedule.model_validate(item) for item in data]
 

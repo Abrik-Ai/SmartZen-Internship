@@ -37,14 +37,16 @@ class ScheduleResponse(BaseModel):
     end_time: str 
     room: RoomRef
 
-def get_my_schedule(range_value: str, token: str, client: BackendClient) -> list[ScheduleResponse]:
+async def get_my_schedule(
+        range_value: str, token: str, client: BackendClient
+        ) -> list[ScheduleResponse]:
     from_time, to_time = date_time(range_value)
     from_time_str = from_time.isoformat()
     if to_time is not None:
         to_time_str = to_time.isoformat()
     else:
         to_time_str = None
-    schedules = client.get_schedules(token, from_time=from_time_str, to_time=to_time_str)
+    schedules = await client.get_schedules(token, from_time=from_time_str, to_time=to_time_str)
     schedules_endpoint = [
     ScheduleResponse(
         id=schedule.id,

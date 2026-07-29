@@ -1,5 +1,5 @@
 from datetime import UTC, datetime, timedelta
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 
 import pytest
 
@@ -46,7 +46,8 @@ class MockResponse:
     def raise_for_status(self) -> None:
         pass  # Simulate a successful response (status code 200)
 
-def test_get_my_schedule() -> None:
+@pytest.mark.asyncio
+async def test_get_my_schedule() -> None:
     mock_data = []
     for i in range(25):
        mock_data.append({
@@ -59,9 +60,9 @@ def test_get_my_schedule() -> None:
     })
     mock_data.reverse() #to assert that actually same 20 items captured
 
-    with patch("app.backend_client.httpx.get", return_value=MockResponse(mock_data)):
+    with patch("app.backend_client.httpx.AsyncClient.get", new_callable=AsyncMock, return_value=MockResponse(mock_data)):
         client = BackendClient(base_url="http://testserver")
-        result = get_my_schedule("week", "test_token", client) 
+        result = await get_my_schedule("week", "test_token", client)
         
     assert len(result) == 20
 

@@ -30,6 +30,8 @@ dev = [
   "ruff>=0.6.0",
   "mypy>=1.11.0",
   "numpy>=2.5.1",
+  # Enables pytest to run async test
+  "pytest-asyncio>=1.4.0"
 ]
 
 [tool.ruff]
