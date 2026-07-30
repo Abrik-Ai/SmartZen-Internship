@@ -5,6 +5,7 @@ from typing import Any
 from langchain_ollama import ChatOllama
 
 from app.config import OLLAMA_BASE_URL, OLLAMA_MODEL
+from app.graph.role_context import get_role_context
 from app.graph.state import GraphState
 from app.models.graph_models import GraphResponse
 from app.ollama_client import OllamaClientError, OllamaInvalidJSONError
@@ -55,6 +56,11 @@ def build_prompt(state: GraphState) -> list[tuple[str, str]]:
     messages: list[tuple[str, str]] = [
         ("system", SYSTEM_PROMPT)
     ]
+
+    role_context = get_role_context(state["caller"])
+
+    if role_context:
+        messages.append(("system", role_context))
 
     for item in state.get("history", []):
         role = item.get("role", "user")

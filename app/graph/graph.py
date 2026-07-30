@@ -1,4 +1,5 @@
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from app.graph.nodes import ask_model, run_tool
 from app.graph.state import GraphState
@@ -13,7 +14,7 @@ def should_run_tool(state: GraphState) -> str:
     return END
 
 
-def build_graph():
+def build_graph() -> CompiledStateGraph:
     """Build the SmartZen LangGraph."""
 
     graph = StateGraph(GraphState)
