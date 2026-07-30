@@ -19,7 +19,7 @@ class AuthContext:
     faculty: str | None = None
     
 
-async def verify_jwt(request: Request) -> None: 
+async def verify_jwt(request: Request) -> AuthContext: 
 #async - to execute simultaneously several processes
     auth_header = request.headers.get("Authorization") #To get the value from client
     if not auth_header or not auth_header.startswith("Bearer "):
@@ -38,6 +38,7 @@ async def verify_jwt(request: Request) -> None:
             faculty=payload.get("faculty"),
             raw_token=token) #to all info from payload
         request.state.auth = auth #to store the authentication context in the request
+        return auth #return the authentication context
     except jwt.ExpiredSignatureError: 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,13 +49,3 @@ async def verify_jwt(request: Request) -> None:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         ) from None 
-
-    
-
-
-
-
-
-
-
-    
