@@ -29,7 +29,10 @@ async def test_get_schedules() -> None:
             }
         ]
 
-        with patch("app.backend_client.httpx.AsyncClient.get", new_callable=AsyncMock, return_value=MockResponse(mock_data)):
+        with patch(
+             "app.backend_client.httpx.AsyncClient.get", 
+             new_callable=AsyncMock, 
+             return_value=MockResponse(mock_data)):
             client = BackendClient(base_url="http://testserver")
             result = await client.get_schedules(token="test_token")
 
