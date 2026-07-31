@@ -12,18 +12,26 @@ dependencies = [
   "pgvector>=0.3.5",
   "psycopg[binary]>=3.2.1",
   "pydantic>=2.9.0",
+  # HTTP client - used by app/backend_client.py to call backend
+  "httpx>=0.27.2",
   "python-dotenv>=1.0.1",
   # Verifies the caller's login token using the same secret the backend signs
   # with (task 1.2). The AI service never has its own account.
   "pyjwt>=2.9.0",
+  # Required for pydantic's EmailStr
+  "email-validator>=2.3.0",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3.2",
-  "httpx>=0.27.2",
+  # Generates Pydantic models from OpenAPI contract
+  "datamodel-code-generator>=0.71.0",
   "ruff>=0.6.0",
   "mypy>=1.11.0",
+  "numpy>=2.5.1",
+  # Enables pytest to run async test
+  "pytest-asyncio>=1.4.0"
 ]
 
 [tool.ruff]
@@ -34,7 +42,7 @@ target-version = "py311"
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
