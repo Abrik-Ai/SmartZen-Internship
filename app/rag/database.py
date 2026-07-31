@@ -13,7 +13,7 @@ DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 
-def get_connection():
+def get_connection() -> psycopg.Connection:
     """
     Create and return a PostgreSQL connection.
     """
@@ -26,7 +26,7 @@ def get_connection():
     )
 
 
-def document_exists(conn, content_hash: str) -> bool:
+def document_exists(conn: psycopg.Connection, content_hash: str) -> bool:
     """
     Check whether a document with the given hash already exists.
     """
@@ -43,11 +43,11 @@ def document_exists(conn, content_hash: str) -> bool:
 
 
 def insert_document(
-    conn,
+    conn: psycopg.Connection,
     source: str,
     title: str,
     content_hash: str,
-):
+) -> uuid.UUID:
     """
     Insert a document and return its UUID.
     """
@@ -73,12 +73,12 @@ def insert_document(
 
 
 def insert_chunk(
-    conn,
-    document_id,
+    conn: psycopg.Connection,
+    document_id: uuid.UUID,
     chunk_index: int,
     content: str,
     token_count: int,
-):
+) -> uuid.UUID:
     """
     Insert one chunk and return its UUID.
     """
@@ -105,10 +105,10 @@ def insert_chunk(
 
 
 def insert_embedding(
-    conn,
-    chunk_id,
+    conn: psycopg.Connection,
+    chunk_id: uuid.UUID,
     embedding: list[float],
-):
+) -> None:
     """
     Insert an embedding for a chunk.
     """

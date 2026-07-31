@@ -1,1 +1,1 @@
-from .search_docs import documentation_search
+from .search_docs import documentation_search as documentation_search

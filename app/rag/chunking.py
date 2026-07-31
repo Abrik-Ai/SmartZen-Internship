@@ -1,11 +1,10 @@
-from typing import List
 
 
 def chunk_text(
     text: str,
     chunk_size: int = 500,
     overlap: int = 50,
-) -> List[str]:
+) -> list[str]:
    
     if chunk_size <= 0:
         raise ValueError("chunk_size must be greater than 0")

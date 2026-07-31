@@ -1,8 +1,16 @@
+from typing import TypedDict
+
 from app.rag.database import get_connection
 from app.rag.embeddings import embed_text
 
 
-def search_docs(query: str, top_k: int = 3):
+class SearchResult(TypedDict):
+    content: str
+    source: str
+    score: float
+
+
+def search_docs(query: str, top_k: int = 3) -> list[SearchResult]:
     """
     Search the document corpus using vector similarity.
 

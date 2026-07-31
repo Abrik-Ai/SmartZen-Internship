@@ -1,7 +1,7 @@
-from app.rag.search import search_docs
+from app.rag.search import SearchResult, search_docs
 
 
-def documentation_search(query: str) -> list[dict]:
+def documentation_search(query: str) -> list[SearchResult]:
     """
     Search the university's documentation and help guides.
 

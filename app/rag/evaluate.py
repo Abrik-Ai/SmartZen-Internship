@@ -4,11 +4,10 @@ import yaml
 
 from app.rag.search import search_docs
 
-
 TEST_FILE = Path("app/rag/test_questions.yaml")
 
 
-def evaluate():
+def evaluate() -> None:
 
     tests = yaml.safe_load(TEST_FILE.read_text())
 
@@ -22,17 +21,22 @@ def evaluate():
 
         results = search_docs(test["question"], top_k=5)
 
-        sources = [r["source"] for r in results]
+        expected_source = test["expect_source"]
+        expected_contains = test["expect_contains"]
 
-        expected = test["expect_source"]
+        matches = [
+            r["source"] == expected_source
+            and expected_contains.lower() in r["content"].lower()
+            for r in results
+        ]
 
-        if len(sources) >= 1 and sources[0] == expected:
+        if len(matches) >= 1 and matches[0]:
             hit1 += 1
 
-        if expected in sources[:3]:
+        if any(matches[:3]):
             hit3 += 1
 
-        if expected in sources:
+        if any(matches[:5]):
             hit5 += 1
 
     print(f"Total Questions : {total}")
