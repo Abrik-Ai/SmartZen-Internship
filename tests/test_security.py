@@ -17,7 +17,10 @@ class MockResponse:
         pass
 @pytest.mark.asyncio
 async def test_token_forward_a() -> None:
-    with patch("app.backend_client.httpx.AsyncClient.get", new_callable=AsyncMock, return_value=MockResponse([])) as mock_get:
+    with patch(
+        "app.backend_client.httpx.AsyncClient.get",
+          new_callable=AsyncMock, 
+          return_value=MockResponse([])) as mock_get:
         client = BackendClient(base_url="http://testserver")
         await get_my_schedule("week", "token-for-instructor-a", client)
 
@@ -26,7 +29,10 @@ async def test_token_forward_a() -> None:
 
 @pytest.mark.asyncio
 async def test_token_forward_b() -> None:
-    with patch("app.backend_client.httpx.AsyncClient.get", new_callable=AsyncMock, return_value=MockResponse([])) as mock_get:
+    with patch(
+        "app.backend_client.httpx.AsyncClient.get", 
+         new_callable=AsyncMock, 
+         return_value=MockResponse([])) as mock_get:
         client = BackendClient(base_url="http://testserver")
         await get_my_schedule("week", "token-for-instructor-b", client)
 

@@ -60,7 +60,10 @@ async def test_get_my_schedule() -> None:
     })
     mock_data.reverse() #to assert that actually same 20 items captured
 
-    with patch("app.backend_client.httpx.AsyncClient.get", new_callable=AsyncMock, return_value=MockResponse(mock_data)):
+    with patch(
+        "app.backend_client.httpx.AsyncClient.get", 
+         new_callable=AsyncMock, 
+         return_value=MockResponse(mock_data)):
         client = BackendClient(base_url="http://testserver")
         result = await get_my_schedule("week", "test_token", client)
         
