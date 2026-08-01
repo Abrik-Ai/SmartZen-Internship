@@ -1,0 +1,79 @@
+- question: "How do I check into a room?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "QR"
+
+- question: "How are notifications delivered?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "WebSocket"
+
+- question: "How are MQTT commands used?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "MQTT"
+
+- question: "Where are notifications stored?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "notifications"
+
+- question: "How are alarms triggered?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "alarm"
+
+- question: "How does authentication work?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "JWT"
+
+- question: "How does the backend communicate with devices?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "MQTT"
+
+- question: "How do clients receive live updates?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "WebSocket"
+
+- question: "What database stores notifications?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "notifications"
+
+- question: "How do room sessions work?"
+  expect_source: "backend_DOCS.md"
+  expect_contains: "session"
+
+- question: "How do I start the frontend?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "npm"
+
+- question: "How do I install frontend dependencies?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "npm install"
+
+- question: "How do I run the development server?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "npm run"
+
+- question: "What framework is used in the frontend?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "React"
+
+- question: "How is routing implemented?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "router"
+
+- question: "How do environment variables work?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: ".env"
+
+- question: "How are API requests made?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "API"
+
+- question: "How do I build the frontend?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "build"
+
+- question: "How do I run the production build?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "preview"
+
+- question: "How is the frontend project organized?"
+  expect_source: "frontend_DOCS.md"
+  expect_contains: "src"

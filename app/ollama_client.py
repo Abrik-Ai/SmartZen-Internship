@@ -13,8 +13,6 @@ from app.ollama_errors import (
     OllamaUnreachableError,
 )
 
-print("langchain_ollama imported OK")
-
 EXAMPLE_SCHEMA = {
     "type": "object",
     "properties": {
