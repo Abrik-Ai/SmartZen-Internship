@@ -26,7 +26,7 @@ def make_state(message: str) -> dict:
 
 
 @pytest.mark.asyncio
-async def test_schedule_today_uses_schedule_tool():
+async def test_schedule_today_uses_schedule_tool() -> None:
     graph = build_graph()
     state = make_state("What's my schedule today?")
 
@@ -49,7 +49,7 @@ async def test_schedule_today_uses_schedule_tool():
 
 
 @pytest.mark.asyncio
-async def test_normal_message_does_not_use_schedule_tool():
+async def test_normal_message_does_not_use_schedule_tool() -> None:
     graph = build_graph()
     state = make_state("Hello")
 
