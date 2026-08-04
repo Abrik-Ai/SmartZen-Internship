@@ -11,7 +11,7 @@ from app.rag.search import search_docs
 
 
 @patch("app.rag.search.embed_text", return_value=[0.1, 0.2, 0.3])
-def test_connection_error_is_translated(mock_embed):
+def test_connection_error_is_translated(mock_embed: MagicMock) -> None:
     with patch(
         "app.rag.search.get_connection",
         side_effect=psycopg.OperationalError("connection failed"),
@@ -21,7 +21,7 @@ def test_connection_error_is_translated(mock_embed):
 
 
 @patch("app.rag.search.embed_text", return_value=[0.1, 0.2, 0.3])
-def test_query_error_is_translated(mock_embed):
+def test_query_error_is_translated(mock_embed: MagicMock) -> None:
     mock_connection = MagicMock()
     mock_cursor = MagicMock()
 
