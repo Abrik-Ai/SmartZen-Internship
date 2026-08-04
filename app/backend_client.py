@@ -1,9 +1,10 @@
+from typing import Any, cast
+
 import httpx
 
 from app.config import BACKEND_API_URL
-from app.models.generated import AuthTokens, Schedule, EmptyRoom
+from app.models.generated import AuthTokens, EmptyRoom, Schedule
 from app.tools_call import call_with_retries
-from typing import cast, Any
 
 
 class BackendClient:
