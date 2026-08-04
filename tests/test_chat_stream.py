@@ -1,5 +1,6 @@
+from collections.abc import AsyncIterable
 from dataclasses import dataclass
-from typing import Any, AsyncIterable
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import httpx

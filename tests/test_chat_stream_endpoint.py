@@ -1,7 +1,8 @@
 import os
 import time
 import uuid
-from typing import Any, AsyncIterator
+from collections.abc import AsyncIterator
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import jwt
