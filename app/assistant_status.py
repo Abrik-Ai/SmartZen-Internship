@@ -17,13 +17,12 @@ Ollama on every request.
 
 from __future__ import annotations
 
-import asyncio
 import time
-from collections.abc import Awaitable, Callable
 
 import httpx
 import ollama
 
+from app.cache import AssistantStatusCache
 from app.config import OLLAMA_BASE_URL
 from app.runtime_config import get_pinned_model
 
@@ -44,43 +43,15 @@ async def probe_ollama(base_url: str | None, model: str) -> bool:
 
     return any(m.model == model for m in response.models)  # condition 3
 
-
-class AssistantStatusCache:
-    """Caches the enabled/disabled result for `ttl_seconds`.
-
-    `probe` and `clock` are injectable so tests don't need a real Ollama
-    server or real wall-clock waits.
-    """
-
-    def __init__(
-        self,
-        probe: Callable[[], Awaitable[bool]],
-        ttl_seconds: float = CACHE_TTL_SECONDS,
-        clock: Callable[[], float] = time.monotonic,
-    ) -> None:
-        self._probe = probe
-        self._ttl_seconds = ttl_seconds
-        self._clock = clock
-        self._lock = asyncio.Lock()
-        self._enabled = False
-        self._checked_at: float | None = None
-
-    async def is_enabled(self) -> bool:
-        async with self._lock:
-            now = self._clock()
-            if self._checked_at is not None and now - self._checked_at < self._ttl_seconds:
-                return self._enabled
-
-            self._enabled = await self._probe()
-            self._checked_at = now
-            return self._enabled
-
-
 async def _default_probe() -> bool:
     return await probe_ollama(OLLAMA_BASE_URL, get_pinned_model())
 
 
-_status_cache = AssistantStatusCache(probe=_default_probe)
+_status_cache = AssistantStatusCache(
+    probe=_default_probe, 
+    ttl_seconds=CACHE_TTL_SECONDS, 
+    clock=time.perf_counter
+    )
 
 
 async def is_assistant_enabled() -> bool:
