@@ -23,7 +23,7 @@ async def call_with_retries(
             if status_code == 403:
                 raise ToolForbidden("Caller is not allowed") from e
             elif status_code == 404:
-                raise ToolNotFound("Resourse is not found") from e
+                raise ToolNotFound("Resource not found") from e
             elif status_code >= 500:
                 if attempt == max_retries:
                      raise ToolUnavailable(f"Backend returned {status_code}") from e
