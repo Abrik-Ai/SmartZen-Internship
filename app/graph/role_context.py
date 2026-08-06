@@ -13,7 +13,8 @@ def get_role_context(caller: str) -> str:
             ]
         )
 
-    if caller in {"COORDINATOR", "ADMIN", "BUILDING_COORDINATOR", "SUPER_ADMIN"}:
+    if caller in {"FACULTY_COORDINATOR", "BUILDING_COORDINATOR", "SUPER_ADMIN"}:
+                       # fix/correct role membership check in get_role_context for FACULTY_COORDINATOR
         return "\n".join(
             [
                 "You are assisting a building coordinator overseeing building ST.",
