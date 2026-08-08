@@ -16,3 +16,5 @@ jobs:
       - run: ruff check .
       - run: mypy .
       - run: pytest
+      - name: Validate golden set
+        run: python scripts/validate_golden_set.py
