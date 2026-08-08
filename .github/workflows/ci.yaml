@@ -18,7 +18,17 @@ jobs:
       - run: pytest
       - name: Validate golden set
         run: python scripts/validate_golden_set.py
+      - name: Install and Start Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          # Wait until the Ollama daemon responds on port 11434
+          until curl -s http://localhost:11434/api/tags > /dev/null; do sleep 1; done
+          # Pull the exact default model specified in your config
+          ollama pull qwen2.5:3b
       - name: Run evaluation harness
+        env:
+          JWT_ACCESS_SECRET: "ci_dummy_jwt_secret_12345"
         run: python scripts/run_eval.py
       - name: Run injection attack suite
         run: python -m scripts.prompt_injections
