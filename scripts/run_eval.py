@@ -1,3 +1,8 @@
+import os
+
+# Set required dummy env vars for evaluation/testing before app imports
+os.environ.setdefault("JWT_ACCESS_SECRET", "eval_dummy_secret_1234567890")
+
 import asyncio
 import sys
 
@@ -91,9 +96,12 @@ async def run_eval() -> None:
     BASELINE_TARGET = 0.82
 
     if tool_accuracy < BASELINE_TARGET:
-        status_line = f" CI Failed: Accuracy ({tool_accuracy:.0%}) "
+        status_line = (
+        f" CI Failed: Accuracy ({tool_accuracy:.0%}) "
         f"dropped below threshold ({BASELINE_TARGET:.0%})"
+    )
         exit_code = 1
+        
     else:
         status_line = " CI Passed: Tool accuracy meets baseline standards!"
         exit_code = 0
