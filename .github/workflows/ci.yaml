@@ -18,3 +18,20 @@ jobs:
       - run: pytest
       - name: Validate golden set
         run: python scripts/validate_golden_set.py
+      - name: Run evaluation harness
+        run: python scripts/run_eval.py
+      - name: Run injection attack suite
+        run: python -m scripts.prompt_injections
+      - name: Post scorecard comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('eval_report.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '```\n' + report + '\n```'
+            });
