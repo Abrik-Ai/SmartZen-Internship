@@ -1,12 +1,15 @@
 import asyncio
-import yaml
-from app.graph.graph import build_graph 
+import sys
+
+from app.evals.load_golden_set import load_golden_set
+from app.graph.graph import build_graph
 from app.graph.state import GraphState
+
 
 def entry_to_graph_state(entry: dict) -> GraphState:
     return {
         "message": entry["message"],
-        "caller": entry.get("role", "unknown"),
+        "caller": entry["role"],
         "history": [],
         "reply": "",
         "scheduleLookup": None,
@@ -20,7 +23,7 @@ def get_actual_tool(output_state: dict) -> str | None:
         return "scheduleLookup"
     return None
 
-def get_actual_proposal(output_state: dict) -> str | None:
+def get_actual_proposal(output_state: dict) -> dict | None:
     tool_result = output_state.get("tool_result")
     if tool_result is None or len(tool_result) == 0:
         return None
@@ -33,11 +36,10 @@ def get_actual_proposal(output_state: dict) -> str | None:
 
     return None
 
-async def run_eval():
+async def run_eval() -> None:
     graph = build_graph()
 
-    with open("app/evals/data/golden_set.yaml", "r") as f:
-        entries = yaml.safe_load(f)
+    entries = load_golden_set("app/evals/data/golden_set.yaml")
 
     total = len(entries)
     tool_correct = 0
