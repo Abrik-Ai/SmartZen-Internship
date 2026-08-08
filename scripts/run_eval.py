@@ -75,24 +75,28 @@ async def run_eval() -> None:
         ):
             invalid_json_count += 1
 
-        tool_pct = int((tool_correct / total) * 100) if total > 0 else 0
-        prop_pct = (
-            int((proposal_correct / proposal_total) * 100)
-            if proposal_total > 0
-            else 0
-        )
-        invalid_pct = int((invalid_json_count / total) * 100) if total > 0 else 0
+        tool_pct = tool_correct / total if total > 0 else 0.0
+        prop_pct = proposal_correct / proposal_total if proposal_total > 0 else 0.0
+        invalid_pct = invalid_json_count / total if total > 0 else 0.0
 
-    print(f"Total:            {total}")
-    print(f"Tool accuracy:    {tool_correct}/{total}  ({tool_pct}%)")
-    print(
-        f"Proposal accuracy: {proposal_correct}/{proposal_total}  ({prop_pct}%)"
-    )
-    print(f"Invalid JSON:     {invalid_json_count}/{total}  ({invalid_pct}%)")
-    print("Failures:")
-    
+        print(f"Total:            {total}")
+        print(f"Tool accuracy:    {tool_correct}/{total}  ({tool_pct:.0%})")
+        print(f"Proposal accuracy: {proposal_correct}/{proposal_total}  ({prop_pct:.0%})")
+        print(f"Invalid JSON:     {invalid_json_count}/{total}  ({invalid_pct:.0%})")
+        print("Failures:")
+            
     for failure in failures:
         print(failure)
+
+    tool_accuracy = tool_correct / total if total > 0 else 0.0
+    BASELINE_TARGET = 0.82
+    if tool_accuracy < BASELINE_TARGET:
+        print(f" CI Failed: Accuracy ({tool_accuracy:.0%}) "
+              f"dropped below threshold ({BASELINE_TARGET:.0%})")
+        sys.exit(1)
+    else:
+        print(" CI Passed: Tool accuracy meets baseline standards!")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
