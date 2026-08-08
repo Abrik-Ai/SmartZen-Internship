@@ -4,3 +4,4 @@ __pycache__/
 .env
 *.egg-info/
 vram_log.csv
+eval_report.txt
