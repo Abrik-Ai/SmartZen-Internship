@@ -1,11 +1,9 @@
 import json
 import logging
+
 from _pytest.logging import LogCaptureFixture
-from unittest.mock import patch
 
-import pytest
-
-from app.tracing import RunTrace, create_trace
+from app.tracing import create_trace
 
 
 def test_create_trace() -> None:
