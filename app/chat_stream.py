@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import contextlib
 from collections.abc import AsyncIterator, Awaitable, Callable
-from typing import Optional
 
 import httpx
 import ollama
@@ -35,7 +34,7 @@ async def stream_chat_tokens(
     model: str,
     is_disconnected: Callable[[], Awaitable[bool]],
     timeout_seconds: float = 60.0,
-    trace: Optional[RunTrace] = None,
+    trace: RunTrace | None = None,
 ) -> AsyncIterator[str]:
     """Yields response tokens one at a time.
 
@@ -51,7 +50,7 @@ async def stream_chat_tokens(
     """
     client = ollama.AsyncClient(host=base_url, timeout=timeout_seconds)
     collected_tokens: list[str] = []
-    tool_chosen: Optional[str] = None
+    tool_chosen: str | None = None
 
     try:
         stream = await client.chat(model=model, messages=messages, stream=True)

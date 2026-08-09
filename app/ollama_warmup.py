@@ -7,7 +7,6 @@ keep-alive requests to avoid cold start latency on the first real request.
 import asyncio
 import logging
 
-import httpx
 import ollama
 
 from app.config import OLLAMA_BASE_URL, OLLAMA_MODEL

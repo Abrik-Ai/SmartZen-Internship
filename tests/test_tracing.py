@@ -1,8 +1,10 @@
 import json
 import logging
+from _pytest.logging import LogCaptureFixture
 from unittest.mock import patch
 
 import pytest
+
 from app.tracing import RunTrace, create_trace
 
 
@@ -13,16 +15,16 @@ def test_create_trace() -> None:
     assert trace.model == "qwen2.5:3b"
 
 
-def test_trace_finish(caplog) -> None:
+def test_trace_finish(caplog: LogCaptureFixture) -> None:
     with caplog.at_level(logging.INFO):
         trace = create_trace("Hello", "qwen2.5:3b")
         trace.finish(reply="Hi there!", tokens=5, tool="none")
-        
+
         assert trace.reply == "Hi there!"
-        assert trace.tokens_used == 5
+        assert trace.tokens == 5  
         assert trace.tool_chosen == "none"
         assert trace.end_time is not None
-        
+
         # Check log output
         assert len(caplog.records) >= 1
         log_entry = json.loads(caplog.records[-1].message)

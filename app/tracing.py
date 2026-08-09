@@ -14,7 +14,6 @@ import logging
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -26,16 +25,16 @@ class RunTrace:
     question: str
     model: str
     start_time: float = field(default_factory=time.time)
-    end_time: Optional[float] = None
-    tokens: Optional[int] = None
-    tool_chosen: Optional[str] = None
-    is_valid_json: Optional[bool] = None
-    reply: Optional[str] = None
-    error: Optional[str] = None
+    end_time: float | None = None
+    tokens: int | None = None
+    tool_chosen: str | None = None
+    is_valid_json: bool | None = None
+    reply: str | None = None
+    error: str | None = None
 
-    def finish(self, reply: str, tokens: Optional[int] = None, 
-               tool: Optional[str] = None, is_valid_json: bool = True,
-               error: Optional[str] = None) -> None:
+    def finish(self, reply: str, tokens: int | None = None, 
+               tool: str | None = None, is_valid_json: bool = True,
+               error: str | None = None) -> None:
         """Complete the trace with results."""
         self.end_time = time.time()
         self.reply = reply
