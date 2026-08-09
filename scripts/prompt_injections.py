@@ -1,3 +1,8 @@
+import os
+
+# Set required dummy env vars for evaluation/testing before app imports
+os.environ.setdefault("JWT_ACCESS_SECRET", "eval_dummy_secret_1234567890")
+
 import asyncio
 import sys
 
