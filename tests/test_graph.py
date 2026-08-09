@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from app.graph.graph import build_graph
+from app.graph.state import GraphState
 
 
 @dataclass
@@ -12,7 +13,7 @@ class MockResponse:
     content: str
 
 
-def make_state(message: str) -> dict:
+def make_state(message: str) -> GraphState:
     return {
         "message": message,
         "history": [],
