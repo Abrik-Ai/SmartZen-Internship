@@ -195,3 +195,108 @@ async def test_mid_stream_timeout_raises_and_still_closes_upstream() -> None:
 
     assert tokens == ["partial"]
     assert stream.closed is True
+
+@pytest.mark.asyncio
+async def test_trace_is_updated_on_success() -> None:
+    """Test that trace is updated with results on successful stream."""
+    from app.tracing import create_trace
+
+    stream = FakeStream(["Hello", " world"])
+    trace = create_trace("Say hi", "qwen2.5:3b")
+
+    with patch(
+        "app.chat_stream.ollama.AsyncClient.chat",
+        new=AsyncMock(return_value=stream),
+    ):
+        tokens = await _collect(
+            stream_chat_tokens(
+                [{"role": "user", "content": "hi"}],
+                base_url="http://localhost:11434",
+                model="qwen2.5:3b",
+                is_disconnected=_never_disconnected(),
+                trace=trace,
+            )
+        )
+
+    assert trace.reply == "Hello world"
+    assert trace.tokens == len(tokens)
+    assert trace.end_time is not None
+    assert trace.error is None
+
+
+@pytest.mark.asyncio
+async def test_trace_is_updated_on_connect_error() -> None:
+    """Test that trace is updated with error when connection fails."""
+    from app.tracing import create_trace
+
+    trace = create_trace("Say hi", "qwen2.5:3b")
+
+    with patch(
+        "app.chat_stream.ollama.AsyncClient.chat",
+        new=AsyncMock(side_effect=ConnectionError("refused")),
+    ):
+        with pytest.raises(ChatStreamError):
+            await _collect(
+                stream_chat_tokens(
+                    [{"role": "user", "content": "hi"}],
+                    base_url="http://localhost:11434",
+                    model="qwen2.5:3b",
+                    is_disconnected=_never_disconnected(),
+                    trace=trace,
+                )
+            )
+
+    assert trace.reply == ""
+    assert trace.tokens == 0
+    assert trace.error is not None
+    assert "refused" in trace.error
+
+
+@pytest.mark.asyncio
+async def test_trace_checks_json_validity() -> None:
+    """Test that trace correctly identifies valid JSON."""
+    from app.tracing import create_trace
+
+    stream = FakeStream(['{"answer": "hello"}'])
+    trace = create_trace("Say hi", "qwen2.5:3b")
+
+    with patch(
+        "app.chat_stream.ollama.AsyncClient.chat",
+        new=AsyncMock(return_value=stream),
+    ):
+        await _collect(
+            stream_chat_tokens(
+                [{"role": "user", "content": "hi"}],
+                base_url="http://localhost:11434",
+                model="qwen2.5:3b",
+                is_disconnected=_never_disconnected(),
+                trace=trace,
+            )
+        )
+
+    assert trace.is_valid_json is True
+
+
+@pytest.mark.asyncio
+async def test_trace_checks_invalid_json() -> None:
+    """Test that trace correctly identifies invalid JSON."""
+    from app.tracing import create_trace
+
+    stream = FakeStream(["This is not JSON"])
+    trace = create_trace("Say hi", "qwen2.5:3b")
+
+    with patch(
+        "app.chat_stream.ollama.AsyncClient.chat",
+        new=AsyncMock(return_value=stream),
+    ):
+        await _collect(
+            stream_chat_tokens(
+                [{"role": "user", "content": "hi"}],
+                base_url="http://localhost:11434",
+                model="qwen2.5:3b",
+                is_disconnected=_never_disconnected(),
+                trace=trace,
+            )
+        )
+
+    assert trace.is_valid_json is False

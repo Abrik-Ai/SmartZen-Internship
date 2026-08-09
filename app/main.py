@@ -106,3 +106,9 @@ async def chat_stream(
                 yield _sse("disabled", DISABLED_RESPONSE_BODY)
 
     return StreamingResponse(event_source(), media_type="text/event-stream")
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    """Start the Ollama warm-up and keep-alive process."""
+    from app.ollama_warmup import start_warmup
+    await start_warmup()

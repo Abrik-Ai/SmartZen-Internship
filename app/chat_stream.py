@@ -15,9 +15,12 @@ from __future__ import annotations
 
 import contextlib
 from collections.abc import AsyncIterator, Awaitable, Callable
+from typing import Optional
 
 import httpx
 import ollama
+
+from app.tracing import RunTrace
 
 
 class ChatStreamError(Exception):
@@ -32,17 +35,36 @@ async def stream_chat_tokens(
     model: str,
     is_disconnected: Callable[[], Awaitable[bool]],
     timeout_seconds: float = 60.0,
+    trace: Optional[RunTrace] = None,
 ) -> AsyncIterator[str]:
     """Yields response tokens one at a time.
 
     Checks `is_disconnected()` between tokens; the moment it's true, this
     breaks out and closes the upstream Ollama stream rather than draining it.
+
+    If `trace` is provided, it will be updated with the results:
+    - tokens: number of tokens streamed
+    - reply: the complete reply
+    - is_valid_json: whether the reply is valid JSON
+    - tool_chosen: if a tool was used (placeholder for future use)
+    - latency: automatically calculated when trace.finish() is called
     """
     client = ollama.AsyncClient(host=base_url, timeout=timeout_seconds)
+    collected_tokens: list[str] = []
+    tool_chosen: Optional[str] = None
 
     try:
         stream = await client.chat(model=model, messages=messages, stream=True)
     except (ConnectionError, ollama.ResponseError, httpx.TimeoutException, httpx.HTTPError) as e:
+        # Update trace with error if provided
+        if trace:
+            trace.finish(
+                reply="",
+                tokens=0,
+                tool=None,
+                is_valid_json=False,
+                error=str(e)
+            )
         raise ChatStreamError(str(e)) from e
 
     try:
@@ -55,8 +77,18 @@ async def stream_chat_tokens(
                 break
             token = chunk.message.content or ""
             if token:
+                collected_tokens.append(token)
                 yield token
     except (ConnectionError, ollama.ResponseError, httpx.TimeoutException, httpx.HTTPError) as e:
+        # Update trace with error if provided
+        if trace:
+            trace.finish(
+                reply="".join(collected_tokens),
+                tokens=len(collected_tokens),
+                tool=tool_chosen,
+                is_valid_json=False,
+                error=str(e)
+            )
         raise ChatStreamError(str(e)) from e
     finally:
         # Always close the upstream stream on our way out — success,
@@ -66,3 +98,23 @@ async def stream_chat_tokens(
         if aclose is not None:
             with contextlib.suppress(Exception):
                 await aclose()
+
+        # Complete the trace with results (on success)
+        if trace:
+            full_reply = "".join(collected_tokens)
+            # Check if the reply is valid JSON
+            import json
+            is_valid = False
+            try:
+                json.loads(full_reply)
+                is_valid = True
+            except (json.JSONDecodeError, ValueError):
+                pass
+            
+            trace.finish(
+                reply=full_reply,
+                tokens=len(collected_tokens),
+                tool=tool_chosen,
+                is_valid_json=is_valid,
+                error=None
+            )
