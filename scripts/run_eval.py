@@ -1,14 +1,44 @@
+import asyncio
 import os
+import sys
+from typing import Any
+
+import httpx
+from dotenv import load_dotenv
+
+from app.backend_client import BackendClient
+from app.evals.load_golden_set import load_golden_set
+from app.graph.graph import build_graph
+from app.graph.state import GraphState
+
+load_dotenv()  # Load environment variables from .env file
 
 # Set required dummy env vars for evaluation/testing before app imports
 os.environ.setdefault("JWT_ACCESS_SECRET", "eval_dummy_secret_1234567890")
 
-import asyncio
-import sys
 
-from app.evals.load_golden_set import load_golden_set
-from app.graph.graph import build_graph
-from app.graph.state import GraphState
+
+client = BackendClient()
+
+def get_auth_token() -> Any:
+    """Fetch token from .env or auto-login as Nikola Tesla if missing/expired."""
+    env_token = os.getenv("INSTRUCTOR_A_TOKEN")
+    if env_token and env_token != "your_test_token_a":
+        return env_token
+
+    backend_url = os.getenv("BACKEND_API_URL", "http://localhost:4000")
+    try:
+        res = httpx.post(
+            f"{backend_url}/auth/login",
+            json={"email": "nikola.tesla@ciu.edu.tr", "password": "123456789"},
+            timeout=5.0,
+        )
+        if res.status_code == 200:
+            return res.json().get("access_token", "mock-token-123")
+    except Exception:
+        pass
+
+    return "mock-token-123"
 
 
 def entry_to_graph_state(entry: dict) -> GraphState:
@@ -17,15 +47,17 @@ def entry_to_graph_state(entry: dict) -> GraphState:
         "caller": entry["role"],
         "history": [],
         "reply": "",
-        "scheduleLookup": None,
+        "token": "mock-token-123",  
+        "toolCall": None,
         "tool_result": None,
         "tool_calls": 0,
         "loop_count": 0,
     }
 
-def get_actual_tool(output_state: dict) -> str | None:
-    if output_state.get("scheduleLookup") is not None:
-        return "scheduleLookup"
+def get_actual_tool(output_state: dict) -> Any | None:
+    tool_call = output_state.get("toolCall")
+    if tool_call is not None:
+        return tool_call.get("name")
     return None
 
 def get_actual_proposal(output_state: dict) -> dict | None:
@@ -42,7 +74,7 @@ def get_actual_proposal(output_state: dict) -> dict | None:
     return None
 
 async def run_eval() -> None:
-    graph = build_graph()
+    graph = build_graph(client=client)
 
     entries = load_golden_set("app/evals/data/golden_set.yaml")
 

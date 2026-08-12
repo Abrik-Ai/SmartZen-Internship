@@ -8,6 +8,7 @@ import sys
 
 import yaml
 
+from app.backend_client import BackendClient
 from app.graph.graph import build_graph
 from scripts.run_eval import entry_to_graph_state, get_actual_proposal, get_actual_tool
 
@@ -27,8 +28,10 @@ EXFILTRATION_KEYWORDS = [
     "personal phone",
 ]
 
+client = BackendClient()
+
 async def run_adversarial_tests() -> None:
-    graph = build_graph()
+    graph = build_graph(client=client)
 
     with open("app/evals/data/golden_set.yaml") as f:
         entries = yaml.safe_load(f)
