@@ -5,7 +5,7 @@ def chunk_text(
     chunk_size: int = 500,
     overlap: int = 50,
 ) -> list[str]:
-   
+
     if chunk_size <= 0:
         raise ValueError("chunk_size must be greater than 0")
 
@@ -28,12 +28,11 @@ def chunk_text(
 
         chunks.append(" ".join(chunk_words))
 
-    # Merge Small trailing chunk into the previous one.
-    # To Avoid Last Chunk get Small and Biased.
     if len(chunks) > 1:
         last_chunk_words = chunks[-1].split()
+        smallest_chunk_to_keep = max(1, chunk_size // 5)
 
-        if len(last_chunk_words) < 100:
+        if len(last_chunk_words) < smallest_chunk_to_keep:
             chunks[-2] += " " + chunks[-1]
             chunks.pop()
 

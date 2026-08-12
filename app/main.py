@@ -4,23 +4,34 @@ import time
 from collections.abc import AsyncIterator, Mapping
 
 from fastapi import Depends, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from app.assistant_status import is_assistant_enabled
 from app.chat_stream import ChatStreamError, stream_chat_tokens
 from app.config import OLLAMA_BASE_URL
+from app.graph.graph import build_graph
 from app.metrics import get_metrics_snapshot, queue_depth_tracker, record_latency
 from app.rate_limit import rate_limit
 from app.runtime_config import get_pinned_model
 
 app = FastAPI(title="smartzen-ai")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+_graph = build_graph()
+
 # The one body every failure mode collapses to — Ollama down, model missing,
 # queue full, timeout. Deliberately doesn't say *which* one: the client only
 # ever needs to know "not available right now", and not distinguishing modes
 # avoids leaking backend state to the caller.
-DISABLED_RESPONSE_BODY = {"enabled": False}
+DISABLED_RESPONSE_BODY: dict[str, object] = {"enabled": False}
 
 MAX_CONCURRENT_STREAMS = int(os.getenv("ASSISTANT_MAX_CONCURRENT_STREAMS", "5"))
 
@@ -106,3 +117,54 @@ async def chat_stream(
                 yield _sse("disabled", DISABLED_RESPONSE_BODY)
 
     return StreamingResponse(event_source(), media_type="text/event-stream")
+
+
+class GraphChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class GraphChatRequest(BaseModel):
+    message: str
+    history: list[GraphChatMessage] = []
+
+
+@app.post("/assistant/chat")
+async def chat(
+    payload: GraphChatRequest,
+    request: Request,
+    _rate_limited: None = Depends(rate_limit),
+) -> dict[str, object]:
+    """Runs the tool-calling graph for one turn: the model decides on a reply
+    and, if the user asked about their schedule, which tool to call — see
+    app/graph/graph.py. Unlike /assistant/chat/stream (a raw passthrough to
+    Ollama), this is the endpoint the frontend's assistant panel actually
+    talks to.
+    """
+    if not await is_assistant_enabled():
+        return DISABLED_RESPONSE_BODY
+
+    result = await _graph.ainvoke(
+        {
+            "message": payload.message,
+            "history": [m.model_dump() for m in payload.history],
+            "caller": request.state.auth.role,
+            "reply": "",
+            "scheduleLookup": None,
+            "tool_result": None,
+            "tool_calls": 0,
+            "loop_count": 0,
+        }
+    )
+
+    return {
+        "reply": result["reply"],
+        "schedules": result.get("tool_result"),
+    }
+
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    """Start the Ollama warm-up and keep-alive process."""
+    from app.ollama_warmup import start_warmup
+    await start_warmup()
