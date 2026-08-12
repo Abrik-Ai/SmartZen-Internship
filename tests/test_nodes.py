@@ -8,14 +8,17 @@ from tests.test_graph import make_state
 
 @dataclass
 class MockResponse:
-    content: str 
+    content: str
+
 
 invalid_json_types: list[str] = [
-    '{"reply": "some reply", "scheduleLookup": "today"}',
-    '{"scheduleLookup": {"range": "today"}}',
+    '{"reply": "some reply", "toolCall": "today"}',
+    '{"toolCall": {"name": "get_my_schedule", "args": {"range_value": "yesterday"}}}',
+    '{"reply": "some reply", "toolCall": {"name": "unknown_tool", "args": {}}}',
     '{"reply": "some reply',
     "",
 ]
+
 
 def test_ask_model_invalid_response() -> None:
     with patch(
@@ -26,20 +29,22 @@ def test_ask_model_invalid_response() -> None:
         result = ask_model(state)
 
         assert result["reply"] == "Sorry, I couldn't process that request."
-        assert result["scheduleLookup"] is None
+        assert result["toolCall"] is None
+
 
 def test_hallucinated_response() -> None:
     with patch(
         "app.graph.nodes.ChatOllama.invoke",
         return_value=MockResponse(
-            content='{"reply": "some reply", "scheduleLookup": {"range": "yesterday"}}'
-            ),
+            content='{"reply": "some reply", "toolCall": {"name": "unknown_tool", "args": {}}}'
+        ),
     ):
         state: GraphState = make_state("test")
         result = ask_model(state)
 
         assert result["reply"] == "Sorry, I couldn't process that request."
-        assert result["scheduleLookup"] is None
+        assert result["toolCall"] is None
+
 
 def test_invalid_json_type() -> None:
     for i in range(100):
@@ -51,7 +56,4 @@ def test_invalid_json_type() -> None:
             result = ask_model(state)
 
             assert result["reply"] == "Sorry, I couldn't process that request."
-            assert result["scheduleLookup"] is None
-
-            
-            
+            assert result["toolCall"] is None
