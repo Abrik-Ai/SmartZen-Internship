@@ -24,7 +24,7 @@
   id: room_01
   message: "find an available computer lab at 2pm"
   role: INSTRUCTOR
-  expect_tool: null
+  expect_tool: find_free_rooms
   expect_proposal: null
 
 - category: normal
