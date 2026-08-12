@@ -4,7 +4,8 @@ from app.evals.load_golden_set import load_golden_set
 
 REQUIRED_KEYS = {"category", "id", "message", "role", "expect_tool", "expect_proposal"}
 ALLOWED_ROLES= {"INSTRUCTOR", "SUPER_ADMIN", "BUILDING_COORDINATOR", "FACULTY_COORDINATOR"}
-ALLOWED_TOOLS = {"get_my_schedule", None}
+ALLOWED_TOOLS = {"get_my_schedule", "find_free_rooms", "get_room_status", 
+                 "documentation_search", None}
 ALLOWED_PROPOSALS = (dict, type(None))
 VALID_CATEGORIES = {"normal", "typo", "ambiguous", "adversarial", "no_tool"}
 
