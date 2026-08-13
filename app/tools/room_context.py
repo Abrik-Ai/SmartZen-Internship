@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from pydantic import BaseModel
 
 from app.backend_client import BackendClient
-from app.tools import get_room_status
+from app.tools.rooms import get_room_status
 
 
 class SensorReadings(BaseModel):
