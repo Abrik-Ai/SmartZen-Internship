@@ -43,6 +43,7 @@ def entry_to_graph_state(entry: dict, access_token: str) -> GraphState:
         "tool_result": None,
         "tool_calls": 0,
         "loop_count": 0,
+        "room_context": None
     }
 
 def get_actual_tool(output_state: dict) -> Any | None:

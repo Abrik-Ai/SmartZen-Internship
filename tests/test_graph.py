@@ -28,6 +28,7 @@ def make_state(message: str) -> GraphState:
         "tool_result": None,
         "tool_calls": 0,
         "loop_count": 0,
+        "room_context": None
     }
 
 
