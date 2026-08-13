@@ -3,7 +3,6 @@ import os
 import sys
 from typing import Any
 
-import httpx
 from dotenv import load_dotenv
 
 from app.backend_client import BackendClient
@@ -20,34 +19,26 @@ os.environ.setdefault("JWT_ACCESS_SECRET", "eval_dummy_secret_1234567890")
 
 client = BackendClient()
 
-def get_auth_token() -> Any:
-    """Fetch token from .env or auto-login as Nikola Tesla if missing/expired."""
-    env_token = os.getenv("INSTRUCTOR_A_TOKEN")
-    if env_token and env_token != "your_test_token_a":
-        return env_token
+async def get_auth_token() -> str:
+    email = os.getenv("EVAL_ACCOUNT_EMAIL")
+    password = os.getenv("EVAL_ACCOUNT_PASSWORD")
 
-    backend_url = os.getenv("BACKEND_API_URL", "http://localhost:4000")
-    try:
-        res = httpx.post(
-            f"{backend_url}/auth/login",
-            json={"email": "nikola.tesla@ciu.edu.tr", "password": "123456789"},
-            timeout=5.0,
+    if not email or not password:
+        raise ValueError(
+            "EVAL_ACCOUNT_EMAIL and EVAL_ACCOUNT_PASSWORD must be set in the .env"
         )
-        if res.status_code == 200:
-            return res.json().get("access_token", "mock-token-123")
-    except Exception:
-        pass
 
-    return "mock-token-123"
+    result = await client.login(email=email, password=password)
+    return result.access_token
 
 
-def entry_to_graph_state(entry: dict) -> GraphState:
+def entry_to_graph_state(entry: dict, access_token: str) -> GraphState:
     return {
         "message": entry["message"],
         "caller": entry["role"],
         "history": [],
         "reply": "",
-        "token": "mock-token-123",  
+        "token": access_token,  
         "toolCall": None,
         "tool_result": None,
         "tool_calls": 0,
@@ -77,6 +68,7 @@ async def run_eval() -> None:
     graph = build_graph(client=client)
 
     entries = load_golden_set("app/evals/data/golden_set.yaml")
+    access_token = await get_auth_token()
 
     total = len(entries)
     tool_correct = 0
@@ -86,7 +78,7 @@ async def run_eval() -> None:
     failures = []
 
     for entry in entries:
-        state = entry_to_graph_state(entry)
+        state = entry_to_graph_state(entry, access_token)
         output_state = await graph.ainvoke(state)
 
         expected_tool = entry.get("expect_tool")

@@ -10,7 +10,12 @@ import yaml
 
 from app.backend_client import BackendClient
 from app.graph.graph import build_graph
-from scripts.run_eval import entry_to_graph_state, get_actual_proposal, get_actual_tool
+from scripts.run_eval import (
+    entry_to_graph_state,
+    get_actual_proposal,
+    get_actual_tool,
+    get_auth_token,
+)
 
 PROMPT_LEAK_KEYWORDS = [
     "system prompt",
@@ -47,11 +52,13 @@ async def run_adversarial_tests() -> None:
             f"(10x each = {total_attacks * 10} total runs)...\n"
     )
 
+    access_token = await get_auth_token()
+
     for entry in adversarial_entries:
         attack_failed = False
 
         for run_num in range(1, 11):
-            state = entry_to_graph_state(entry)
+            state = entry_to_graph_state(entry, access_token)
             output_state = await graph.ainvoke(state)
             reply = output_state.get("reply", "").lower()
             tool = get_actual_tool(output_state)
