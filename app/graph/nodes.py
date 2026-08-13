@@ -12,7 +12,13 @@ from app.graph.state import GraphState
 from app.models.graph_models import GraphResponse
 from app.ollama_client import OllamaClientError, OllamaInvalidJSONError
 from app.tool_errors import ToolCallError
-from app.tools import documentation_search, find_free_rooms, get_my_schedule, get_room_status
+from app.tools import (
+    documentation_search,
+    find_free_rooms,
+    get_my_schedule,
+    get_room_context,
+    get_room_status,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -215,4 +221,20 @@ async def run_tool(state: GraphState, client: BackendClient) -> dict[str, Any]:
     return {
         "tool_result": _serialize_tool_result(result),
         "tool_calls": current_calls + 1,
+    }
+
+async def fetch_room_context(state: GraphState, client: BackendClient) -> dict[str, Any]:
+    """Fetch the room context for the current user"""
+    
+    token = state["token"]
+    try:
+        room_context = await get_room_context(token=token, client=client)
+    except ToolCallError as exc:
+        room_context = None
+        logger.warning(f"Failed to fetch room context: {exc}")
+    except Exception as exc:
+        room_context = None
+        logger.exception(f"Unexpected error while fetching room context: {exc}")
+    return {
+        "room_context": room_context
     }
