@@ -118,8 +118,8 @@ User: Hello
 
 User: is room CU101 free right now
 {
-  "I can't check a specific room,
-    but I can find an available room for you instead.",
+  "reply": "I can't check a specific room, but I can find an available room for you 
+    instead.",
   "toolCall": null
 }
 """
@@ -155,6 +155,42 @@ def _format_room_context(room_context: RoomContext) -> str:
         return summary
     return summary + " " + " ".join(sensors) 
 
+# Cap on how many history entries reach the model
+MAX_HISTORY_ENTRIES = 8
+
+# Approximate characters-per-token for English prose (~4:1 for ordinary
+# text)
+# A real tokenizer was considered and rejected: it would mean adding
+# transformers as a *production* dependency, downloading or vendoring
+# Qwen tokenizer files, and a CI network allowlist change — all to make a
+# safety rail precise. It also introduces a silent-drift failure
+# mode if the HuggingFace model name ever diverges from OLLAMA_MODEL.
+CHARS_PER_TOKEN = 4
+
+# Conservative ceiling for the whole prompt. qwen2.5:3b declares 32768
+# 2048 leaves reserve for generation, approximation error, and chat-template overhead.
+MAX_PROMPT_TOKENS = 2048
+
+def _history_length(history: list[dict[str, str]]) -> int:
+    """Approximate character cost of a history slice."""
+    return sum(len(item.get("content", "")) for item in history)
+
+def _trim_history(history: list[dict[str, str]], char_budget: int) -> list[dict[str, str]]:
+    """Reduce history to what should actually be sent to the model."""
+    trimmed = history[-MAX_HISTORY_ENTRIES:]
+
+    if trimmed and trimmed[0].get("role") == "assistant":
+        trimmed = trimmed[1:]
+
+    # `> 1` not `> 0`: the check runs before the drop, so it must leave one entry standing.
+    while len(trimmed) > 1 and _history_length(trimmed) > char_budget:
+        trimmed = trimmed[1:]
+        if len(trimmed) > 1  and trimmed[0].get("role") == "assistant":
+            trimmed = trimmed[1:]
+
+    return trimmed
+
+
 
 
 def build_prompt(state: GraphState) -> list[tuple[str, str]]:
@@ -174,7 +210,11 @@ def build_prompt(state: GraphState) -> list[tuple[str, str]]:
     if room_context:
         messages.append(("system", _format_room_context(room_context)))
 
-    for item in state.get("history", []):
+    committed = sum(len(content) for _, content in messages)
+    committed += len(state["message"])
+    char_budget = MAX_PROMPT_TOKENS * CHARS_PER_TOKEN - committed
+
+    for item in _trim_history(state.get("history", []), char_budget):
         role = item.get("role", "user")
         content = item.get("content", "")
 
