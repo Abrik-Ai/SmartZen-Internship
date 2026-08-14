@@ -122,14 +122,21 @@ User: is room CU101 free right now
     instead.",
   "toolCall": null
 }
+
+User: find quiet study room in building EH with 30 seats
+{
+  "reply": "I can't search by building or seating. 
+    I can look for rooms that are free for a set amount of time.",
+  "toolCall": null
+}
 """
 
 def _format_room_context(room_context: RoomContext) -> str:
     """Format live room and sensor data for the model prompt."""
     summary = (f"The caller is currently in room {room_context.room_name}, "
         f"teaching {room_context.current_class}, which ends at "
-        f"{room_context.end_time.strftime('%H:%M')}, "
-        f"({room_context.minutes_left} minutes from now.)"
+        f"{room_context.end_time.strftime('%H:%M')} "
+        f"({room_context.minutes_left} minutes from now)"
     )
 
     sensors: list[str] = []
