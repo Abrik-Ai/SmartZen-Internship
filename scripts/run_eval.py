@@ -110,9 +110,9 @@ async def run_eval() -> None:
     invalid_pct = invalid_json_count / total if total > 0 else 0.0
     report_lines = [
          f"Total:            {total}",
-        f"Tool accuracy:    {tool_correct}/{total}  ({tool_pct:.0%})",
-        f"Proposal accuracy: {proposal_correct}/{proposal_total}  ({prop_pct:.0%})",
-        f"Invalid JSON:     {invalid_json_count}/{total}  ({invalid_pct:.0%})",
+        f"Tool accuracy:    {tool_correct}/{total}  ({tool_pct:.1%})",
+        f"Proposal accuracy: {proposal_correct}/{proposal_total}  ({prop_pct:.1%})",
+        f"Invalid JSON:     {invalid_json_count}/{total}  ({invalid_pct:.1%})",
         "Failures:",
     ]
     report_lines.extend(failures)  
@@ -122,8 +122,8 @@ async def run_eval() -> None:
 
     if tool_accuracy < BASELINE_TARGET:
         status_line = (
-        f" CI Failed: Accuracy ({tool_accuracy:.0%}) "
-        f"dropped below threshold ({BASELINE_TARGET:.0%})"
+        f" CI Failed: Accuracy ({tool_accuracy:.1%}) "
+        f"dropped below threshold ({BASELINE_TARGET:.1%})"
     )
         exit_code = 1
         
