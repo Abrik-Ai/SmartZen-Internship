@@ -33,8 +33,14 @@ jobs:
       - name: Run evaluation harness
         env:
           JWT_ACCESS_SECRET: "ci_dummy_jwt_secret_12345"
+          EVAL_ACCOUNT_EMAIL: ${{ secrets.EVAL_ACCOUNT_EMAIL }}
+          EVAL_ACCOUNT_PASSWORD: ${{ secrets.EVAL_ACCOUNT_PASSWORD }}
         run: python scripts/run_eval.py
       - name: Run injection attack suite
+        env:
+          JWT_ACCESS_SECRET: "ci_dummy_jwt_secret_12345"
+          EVAL_ACCOUNT_EMAIL: ${{ secrets.EVAL_ACCOUNT_EMAIL }}
+          EVAL_ACCOUNT_PASSWORD: ${{ secrets.EVAL_ACCOUNT_PASSWORD }}
         run: python -m scripts.prompt_injections
       - name: Post scorecard comment
         if: always()
