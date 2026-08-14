@@ -252,7 +252,7 @@
   id: amb_06
   message: "is there space available at GE"
   role: FACULTY_COORDINATOR
-  expect_tool: null
+  expect_tool: find_free_rooms
   expect_proposal: null
 
 - category: ambiguous
