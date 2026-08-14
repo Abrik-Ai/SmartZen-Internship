@@ -13,6 +13,7 @@ from app.models.graph_models import GraphResponse
 from app.ollama_client import OllamaClientError, OllamaInvalidJSONError
 from app.tool_errors import ToolCallError
 from app.tools import (
+    RoomContext,
     documentation_search,
     find_free_rooms,
     get_my_schedule,
@@ -90,6 +91,38 @@ User: Hello
 }
 """
 
+def _format_room_context(room_context: RoomContext) -> str:
+    """Format live room and sensor data for the model prompt."""
+    summary = (f"The caller is currently in room {room_context.room_name}, "
+        f"teaching {room_context.current_class}, which ends at "
+        f"{room_context.end_time.strftime('%H:%M')}, "
+        f"({room_context.minutes_left} minutes from now.)"
+    )
+
+    sensors: list[str] = []
+    if room_context.readings.temperature is not None:
+        sensors.append(f"The temperature is {room_context.readings.temperature}°C.")
+    if room_context.readings.humidity is not None:
+        sensors.append(f"Humidity is {room_context.readings.humidity}%.")
+    if room_context.readings.co2 is not None:
+        sensors.append(f"CO2 is {room_context.readings.co2} ppm.")
+    if room_context.readings.lux is not None:
+        sensors.append(f"The light level is {room_context.readings.lux} lux.")
+    if room_context.readings.presence is not None:
+        if room_context.readings.presence: 
+            sensors.append("The room is occupied.")
+        else:
+            sensors.append("The room is empty.")
+    if room_context.readings.window_open is not None:
+        if room_context.readings.window_open:
+            sensors.append("The window is open.")
+        else:
+            sensors.append("The window is closed.")
+    if not sensors:
+        return summary
+    return summary + " " + " ".join(sensors) 
+
+
 
 def build_prompt(state: GraphState) -> list[tuple[str, str]]:
     """Build the conversation sent to the model."""
@@ -102,6 +135,11 @@ def build_prompt(state: GraphState) -> list[tuple[str, str]]:
 
     if role_context:
         messages.append(("system", role_context))
+
+    room_context = state["room_context"]
+    
+    if room_context:
+        messages.append(("system", _format_room_context(room_context)))
 
     for item in state.get("history", []):
         role = item.get("role", "user")
