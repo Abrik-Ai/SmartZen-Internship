@@ -118,7 +118,7 @@ async def run_eval() -> None:
     report_lines.extend(failures)  
 
     tool_accuracy = tool_correct / total if total > 0 else 0.0
-    BASELINE_TARGET = 0.82
+    BASELINE_TARGET = 0.82 #was measured aagainst stub data
 
     if tool_accuracy < BASELINE_TARGET:
         status_line = (
