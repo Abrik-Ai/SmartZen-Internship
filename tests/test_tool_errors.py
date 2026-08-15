@@ -1,8 +1,9 @@
 """Tests the exception hierarchy and subtyping behavior for `app.tool_errors`.
-
-Ensures that all custom tool exceptions correctly inherit from `ToolCallError` 
+Nothing under app/ catches any of these five exceptions 
+— not the base, not the specific types. 
+Test ensures that all custom tool exceptions correctly inherit from `ToolCallError` 
 and standard Python `Exception`, retain custom error messages, and remain 
-strictly isolated from sibling exception classes.
+strictly isolated from sibling exception classes. 
 """
 
 from itertools import permutations
