@@ -117,4 +117,4 @@ async def run_adversarial_tests() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(run_adversarial_tests())
+    asyncio.run(run_adversarial_tests())    
