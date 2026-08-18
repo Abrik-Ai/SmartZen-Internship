@@ -17,9 +17,7 @@ async def token_a() -> str:
     email = os.getenv("INSTRUCTOR_A_EMAIL")
     password = os.getenv("INSTRUCTOR_A_PASSWORD")
     if not email or not password:
-        raise ValueError(
-            "INSTRUCTOR_A_EMAIL and INSTRUCTOR_A_PASSWORD must be set in .env"
-        )
+        pytest.skip("INSTRUCTOR_A_* not set — live-backend test")
     result = await BackendClient(BACKEND_URL).login(email=email, password=password)
     return result.access_token
 
@@ -28,9 +26,7 @@ async def token_b() -> str:
     email = os.getenv("INSTRUCTOR_B_EMAIL")
     password = os.getenv("INSTRUCTOR_B_PASSWORD")
     if not email or not password:
-        raise ValueError(
-            "INSTRUCTOR_B_EMAIL and INSTRUCTOR_B_PASSWORD must be set in .env"
-        )
+        pytest.skip("INSTRUCTOR_B_* not set — live-backend test")
     result = await BackendClient(BACKEND_URL).login(email=email, password=password)
     return result.access_token
 
