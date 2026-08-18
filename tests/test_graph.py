@@ -80,6 +80,7 @@ async def test_schedule_today_uses_schedule_tool() -> None:
         }
     ]
     assert result["tool_calls"] == 1
+    assert result["tool_name"] == "get_my_schedule"
 
 
 @pytest.mark.asyncio
@@ -135,6 +136,7 @@ async def test_room_request_uses_room_tool() -> None:
         }
     ]
     assert result["tool_calls"] == 1
+    assert result["tool_name"] == "find_free_rooms"
 
 
 @pytest.mark.asyncio
@@ -157,4 +159,5 @@ async def test_normal_message_does_not_use_tool() -> None:
 
     assert result["toolCall"] is None
     assert result["tool_result"] is None
+    assert result["tool_name"] is None
     assert result["tool_calls"] == 0
