@@ -16,6 +16,20 @@ def should_run_tool(state: GraphState) -> str:
 
     return END
 
+# Each loop iteration is a full Ollama round-trip. 3 allows a tool call,
+# a second pass to answer from it, and one retry, without letting a
+# confused model burn the eval run.
+MAX_TOOL_CALLS = 3
+
+
+def should_continue_after_tool(state: GraphState) -> str:
+    """Decide whether the model gets another pass after a tool ran."""
+
+    if state.get("tool_calls", 0) >= MAX_TOOL_CALLS:
+        return END
+
+    return "model"
+
 
 def build_graph(client: BackendClient) -> CompiledStateGraph:
     """Build the SmartZen LangGraph."""
@@ -40,6 +54,13 @@ def build_graph(client: BackendClient) -> CompiledStateGraph:
         },
     )
 
-    graph.add_edge("tool", END)
+    graph.add_conditional_edges(
+        "tool",
+        should_continue_after_tool,
+        {
+            "model": "model",
+            END: END,
+        },
+    )
 
     return graph.compile()
