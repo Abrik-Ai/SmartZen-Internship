@@ -310,6 +310,7 @@ async def run_tool(state: GraphState, client: BackendClient) -> dict[str, Any]:
         return {
             "tool_result": None,
             "tool_calls": current_calls,
+            "tool_name": None,
         }
 
     name = tool_call["name"]
@@ -339,6 +340,7 @@ async def run_tool(state: GraphState, client: BackendClient) -> dict[str, Any]:
     return {
         "tool_result": _serialize_tool_result(result),
         "tool_calls": current_calls + 1,
+        "tool_name": name,
     }
 
 async def fetch_room_context(state: GraphState, client: BackendClient) -> dict[str, Any]:
