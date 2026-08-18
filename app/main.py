@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from app.assistant_status import is_assistant_enabled
+from app.backend_client import BackendClient
 from app.chat_stream import ChatStreamError, stream_chat_tokens
 from app.config import OLLAMA_BASE_URL
 from app.graph.graph import build_graph
@@ -25,7 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_graph = build_graph()
+_client = BackendClient()
+_graph = build_graph(_client)
 
 # The one body every failure mode collapses to — Ollama down, model missing,
 # queue full, timeout. Deliberately doesn't say *which* one: the client only
@@ -115,7 +117,6 @@ async def chat_stream(
                 yield _sse("done", {})
             except ChatStreamError:
                 yield _sse("disabled", DISABLED_RESPONSE_BODY)
-
     return StreamingResponse(event_source(), media_type="text/event-stream")
 
 
@@ -149,17 +150,19 @@ async def chat(
             "message": payload.message,
             "history": [m.model_dump() for m in payload.history],
             "caller": request.state.auth.role,
+            "token":  request.state.auth.raw_token,
             "reply": "",
-            "scheduleLookup": None,
+            "toolCall": None,
             "tool_result": None,
             "tool_calls": 0,
             "loop_count": 0,
+            "room_context": None
         }
     )
 
     return {
         "reply": result["reply"],
-        "schedules": result.get("tool_result"),
+        "tool_result": result.get("tool_result"),
     }
 
 
