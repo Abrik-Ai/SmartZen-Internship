@@ -41,6 +41,7 @@ def entry_to_graph_state(entry: dict, access_token: str) -> GraphState:
         "token": access_token,  
         "toolCall": None,
         "tool_result": None,
+        "tool_name": None,
         "tool_calls": 0,
         "loop_count": 0,
         "room_context": None

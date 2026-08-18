@@ -11,6 +11,7 @@ class GraphState(TypedDict):
     reply: str
     toolCall: dict[str, Any] | None
     tool_result: Any | None
+    tool_name: str | None
     tool_calls: int 
     loop_count: int
     room_context: RoomContext | None
