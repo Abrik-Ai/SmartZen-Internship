@@ -154,6 +154,7 @@ async def chat(
             "reply": "",
             "toolCall": None,
             "tool_result": None,
+            "tool_name": None,
             "tool_calls": 0,
             "loop_count": 0,
             "room_context": None

@@ -26,6 +26,7 @@ def make_state(message: str) -> GraphState:
         "token": "mock-token-123",
         "toolCall": None,
         "tool_result": None,
+        "tool_name": None,
         "tool_calls": 0,
         "loop_count": 0,
         "room_context": None
@@ -47,9 +48,19 @@ async def test_schedule_today_uses_schedule_tool() -> None:
         }
     )
 
+    second_content = json.dumps(
+        {
+            "reply": "You have Physics 101 in ST101 from 14:00 to 15:00.",
+            "toolCall": None,
+        }
+    )
+
     with patch(
         "app.graph.nodes.ChatOllama.invoke",
-        return_value=MockResponse(content=mock_content),
+        side_effect=[
+            MockResponse(content=mock_content),
+            MockResponse(content=second_content),
+        ],
     ):
         with patch(
             "app.graph.nodes.get_my_schedule",
@@ -65,10 +76,6 @@ async def test_schedule_today_uses_schedule_tool() -> None:
         ):
             result = await graph.ainvoke(state)
 
-    assert result["toolCall"] == {
-        "name": "get_my_schedule",
-        "args": {"range_value": "today"},
-    }
     assert result["tool_result"] == [
         {
             "id": "sched-1",
@@ -79,6 +86,8 @@ async def test_schedule_today_uses_schedule_tool() -> None:
         }
     ]
     assert result["tool_calls"] == 1
+    assert result["tool_name"] == "get_my_schedule"
+    assert result["reply"] == "You have Physics 101 in ST101 from 14:00 to 15:00."
 
 
 @pytest.mark.asyncio
@@ -96,9 +105,19 @@ async def test_room_request_uses_room_tool() -> None:
         }
     )
 
+    second_content = json.dumps(
+        {
+            "reply": "CU201 in building CU is free.",
+            "toolCall": None,
+        }
+    )
+
     with patch(
         "app.graph.nodes.ChatOllama.invoke",
-        return_value=MockResponse(content=mock_content),
+        side_effect=[
+            MockResponse(content=mock_content),
+            MockResponse(content=second_content),
+        ],
     ):
         with patch(
             "app.graph.nodes.find_free_rooms",
@@ -117,10 +136,6 @@ async def test_room_request_uses_room_tool() -> None:
         ):
             result = await graph.ainvoke(state)
 
-    assert result["toolCall"] == {
-        "name": "find_free_rooms",
-        "args": {"minutes_needed": 30, "start_time": None},
-    }
     assert result["tool_result"] == [
         {
             "id": "CU201",
@@ -134,6 +149,8 @@ async def test_room_request_uses_room_tool() -> None:
         }
     ]
     assert result["tool_calls"] == 1
+    assert result["tool_name"] == "find_free_rooms"
+    assert result["reply"] == "CU201 in building CU is free."
 
 
 @pytest.mark.asyncio
@@ -156,4 +173,5 @@ async def test_normal_message_does_not_use_tool() -> None:
 
     assert result["toolCall"] is None
     assert result["tool_result"] is None
+    assert result["tool_name"] is None
     assert result["tool_calls"] == 0

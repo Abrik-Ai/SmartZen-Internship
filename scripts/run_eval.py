@@ -41,27 +41,26 @@ def entry_to_graph_state(entry: dict, access_token: str) -> GraphState:
         "token": access_token,  
         "toolCall": None,
         "tool_result": None,
+        "tool_name": None,
         "tool_calls": 0,
         "loop_count": 0,
         "room_context": None
     }
 
 def get_actual_tool(output_state: dict) -> Any | None:
-    tool_call = output_state.get("toolCall")
-    if tool_call is not None:
-        return tool_call.get("name")
-    return None
+    return output_state.get("tool_name")
 
 def get_actual_proposal(output_state: dict) -> dict | None:
     tool_result = output_state.get("tool_result")
-    if tool_result is None or len(tool_result) == 0:
-        return None
-    
-    if isinstance(tool_result, list):
-        return tool_result[0] if len(tool_result) > 0 else None
 
     if isinstance(tool_result, dict):
+        if "error" in tool_result:
+            return None
         return tool_result
+
+    if isinstance(tool_result, list) and tool_result:
+        first = tool_result[0]
+        return first if isinstance(first, dict) else None
 
     return None
 
