@@ -1,0 +1,99 @@
+
+GIT WORKFLOW Contract - SmartZen Internship Program
+
+
+Please read this document carefully before starting any task.
+Following this workflow is mandatory for all interns (Backend, Frontend, AI).
+
+
+1. BEFORE OPENING A BRANCH
+   Always fetch and pull the latest changes from "main" before creating a new branch.
+    git checkout main
+    git fetch origin
+    git pull origin main
+
+- This is done so that your branch starts from the most up-to-date code.
+- Skipping this step is the most common cause of merge conflicts later and you are responsible to solve any merge conflict in your request.
+
+
+2. BRANCH NAMING CONVENTION
+
+Every task must be done on its own branch. Do NOT work directly on main.
+
+Branch name format:
+
+    yourname/type/short-description
+
+Where "type" is one of:
+    feat      new feature
+    fix       bug fix
+    doc       documentation
+    chore     maintenance/setup/config tasks
+    refactor  code restructuring without changing behavior
+
+Examples:
+    sayed/feat/qr-access-endpoint
+    ali/fix/login-token-expiry
+    Sara/doc/api-readme-update
+    omar/chore/update-dependencies
+    lina/refactor/auth-service-cleanup
+
+
+3. COMMIT MESSAGE CONVENTION
+
+Every commit message must follow this format:
+
+    type/description of the change
+
+Where "type" is one of:
+    feat
+    fix
+    doc
+    chore
+    refactor
+
+Examples:
+    feat/add QR code generation for classroom access
+    fix/resolve token expiry causing logout loop
+    doc/update setup instructions in README
+    chore/upgrade nestjs dependencies to latest version
+    refactor/simplify MQTT subscriber logic
+
+
+4. BEFORE FINISHING A TASK - TESTING
+
+- Before considering a task complete, you must test your work.
+- Confirm that what was actually delivered matches what was asked in the task/issue.
+- Do not open a merge request for something you have not verified yourself.
+- If tests exist in the repo, run them. If no tests exist, manually verify the
+  feature/fix behaves as expected.
+
+
+5. OPENING A MERGE REQUEST (MR) / PULL REQUEST (PR)
+----------------------------------------------------
+- Once your branch is ready and tested, push your branch to your own branch (not main) and open
+  a Merge Request / Pull Request targeting base as "main".
+
+- MR / PR TITLE RULE:
+  You must mention the issue number you were assigned in the title.
+  This allows GitHub to automatically close the issue and mark the task
+  as done once the MR is merged.
+
+  Example MR title:
+      Closes #24 - Add QR code generation for classroom access
+
+  Other accepted keywords GitHub recognizes for auto-closing issues:
+      Closes #24
+      Fixes #24
+      Resolves #24
+
+
+6. MERGE RULES
+
+- No direct pushing to main. All changes must go through a Merge Request.
+- Fetching the latest changes from main before starting your branch helps
+  prevent merge conflicts.
+- If a merge conflict still happens, YOU are responsible for resolving it
+  on your own branch before requesting review again.
+- Once resolved and reviewed, your branch will be merged into main.
+
